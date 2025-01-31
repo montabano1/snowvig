@@ -1,0 +1,35 @@
+Option 1: Build-your-own weather app
+Overview
+The objective of this project is to showcase your ability to implement a thoughtful
+single-page prototype that is quick to iterate on. This exercise is a take-home project that we
+recommend you take 4-8 hours to complete.
+Prompt: Given the following concept of a weather app for outdoor group events, how might
+you build a prototype that would test the viability of the design? Feel free to take liberties
+where you feel it should be improved. The goal is to simulate an experience that can be
+experimented on quickly.
+Constraints
+User need: "When hosting a repeating Friday afternoon meetup in the park, I want to keep an
+eye on the weather forecast to let everyone know what to expect ahead of time so we can bring
+the right food, games, and gear. We'll often cancel this week if it's too wet or windy, and if next
+week's weather looks more favorable."
+Data to show: Any weather data from the Visual Crossing API. Requires signing up to obtain an
+API key, but it is worth familiarizing yourself with before you begin coding. The user should be
+presented with generic weather message descriptions, perhaps a “nice day” if temperature falls
+between 60-75 °F, “chance of rain” if humidity falls between 25-75%, etc. You may use any
+charting library you like. Some popular ones include Chart.js or D3.js.
+Interaction: Allow a meetup organizer to set the event's arbitrary location, choose from
+preset days and time ranges (while assuming the event repeats weekly), and scroll when
+needed.
+Technology: The project should be built using React. For ease of deployment, we
+recommend using Code Sandbox, but any combination of source code + public link will
+suffice. Other technology choices (frameworks, styling tools, TypeScript vs JavaScript, state
+management, data fetching, etc) are entirely up to you. Use of any LLM copilot tools is
+allowed, encouraged even.
+Look and feel: You may use any design system, asset library, or component framework you
+feel comfortable with. Feel free to write your own styling if you feel inclined. Some popular
+
+asset libraries include Material and Noun Project.
+Layout: See the reference sketch below which allows an organizer to compare this
+week's weather to the following week's weather.
+Time: You have 72 hours from receiving this exercise to submit a URL to your code
+sandbox where your project lives.
