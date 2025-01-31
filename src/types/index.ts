@@ -1,10 +1,3 @@
-export interface TimeSlot {
-  day: string;
-  period: "morning" | "afternoon" | "evening";
-  startTime: string;
-  endTime: string;
-}
-
 export interface Location {
   name: string;
   lat: number;
