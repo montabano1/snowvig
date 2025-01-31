@@ -11,19 +11,9 @@ interface WeatherCardLayoutProps {
   dateSelector?: React.ReactNode;
 }
 
-const ContentSection = styled(Box)(({ theme }) => ({
-  marginBottom: theme.spacing(3),
-}));
-
 const GraphContainer = styled(Box)({
   height: 300,
   marginBottom: 16,
-});
-
-const ScoreSection = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  marginBottom: 24,
 });
 
 const RecommendationsSection = styled(Box)(({ theme }) => ({

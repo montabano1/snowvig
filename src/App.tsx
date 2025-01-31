@@ -6,7 +6,7 @@ import { EventControls } from './components/EventControls';
 import { getWeatherForecast } from './services/weatherService';
 import { calculateEventScore } from './services/eventScoreService';
 import { WeatherData, Location, EventScore } from './types';
-import { format, addDays, nextFriday, isFriday, eachDayOfInterval } from 'date-fns';
+import { format, nextFriday} from 'date-fns';
 
 const defaultLocation: Location = {
   name: "New York, New York",
@@ -155,8 +155,9 @@ function App() {
         }}>
           <Box sx={{ mb: 3 }}>
             <EventControls
-              onLocationChange={setLocation}
-            />
+              onLocationChange={setLocation} onDayChange={function (): void {
+                throw new Error('Function not implemented.');
+              } } selectedDay={''}            />
           </Box>
           <Box
             sx={{ 

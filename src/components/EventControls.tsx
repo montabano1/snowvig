@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, FormControl, InputLabel, TextField, MenuItem, Select, SelectChangeEvent, Autocomplete, CircularProgress } from '@mui/material';
+import { Box, FormControl, TextField, Autocomplete, CircularProgress } from '@mui/material';
 import { Location } from '../types';
 import { searchLocations } from '../services/locationService';
 import debounce from 'lodash/debounce';
@@ -12,8 +12,6 @@ interface EventControlsProps {
 
 export const EventControls: React.FC<EventControlsProps> = ({
   onLocationChange,
-  onDayChange,
-  selectedDay,
 }) => {
   const [locations, setLocations] = useState<Location[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -29,11 +27,7 @@ export const EventControls: React.FC<EventControlsProps> = ({
     };
     setSelectedLocation(defaultLocation);
     onLocationChange(defaultLocation);
-  }, []);
-
-  const handleDayChange = (event: SelectChangeEvent) => {
-    onDayChange(event.target.value);
-  };
+  }, [onLocationChange]);
 
   const handleLocationSearch = debounce(async (query: string) => {
     if ((/^\d{5}$/.test(query) || (!query.match(/^\d+$/) && query.length >= 3))) {

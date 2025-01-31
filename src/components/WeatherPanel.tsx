@@ -23,7 +23,6 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
   date,
   dates,
   onDateSelect,
-  isCurrent,
   isLoading,
   weatherData,
   score,
