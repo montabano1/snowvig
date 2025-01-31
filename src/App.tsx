@@ -172,12 +172,8 @@ function App() {
               ) : (
                 currentWeek.length > 0 && currentScore && (
                   <WeatherCardLayout
-                    title={
-                      <>
-                        <h2>This {selectedDay}</h2>
-                        <div>Weather Conditions Over Time</div>
-                      </>
-                    }
+                    title={`This ${selectedDay}`}
+                    location={location}
                     graph={<WeatherGraph weatherData={currentWeek} timeLabels={timeLabels} />}
                     score={<EventScoreCard score={currentScore} />}
                   />
@@ -198,12 +194,8 @@ function App() {
               ) : (
                 nextWeek.length > 0 && nextScore && (
                   <WeatherCardLayout
-                    title={
-                      <>
-                        <h2>Next {selectedDay}</h2>
-                        <div>Weather Conditions Over Time</div>
-                      </>
-                    }
+                    title={`Next ${selectedDay}`}
+                    location={location}
                     graph={<WeatherGraph weatherData={nextWeek} timeLabels={timeLabels} />}
                     score={<EventScoreCard score={nextScore} />}
                   />

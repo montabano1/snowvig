@@ -1,8 +1,9 @@
 import React from 'react';
-import { Card, CardContent, Box, styled } from '@mui/material';
+import { Card, CardContent, Box, Typography, styled } from '@mui/material';
 
 interface WeatherCardLayoutProps {
-  title: React.ReactNode;
+  title: string;
+  location: string;
   graph: React.ReactNode;
   score: React.ReactNode;
   conditions?: React.ReactNode;
@@ -30,6 +31,7 @@ const RecommendationsSection = styled(Box)(({ theme }) => ({
 
 export const WeatherCardLayout: React.FC<WeatherCardLayoutProps> = ({
   title,
+  location,
   graph,
   score,
   conditions,
@@ -46,13 +48,18 @@ export const WeatherCardLayout: React.FC<WeatherCardLayoutProps> = ({
         flexGrow: 1,
         display: 'flex',
         flexDirection: 'column',
-        gap: 2,
+        gap: 3,
         p: 3,
         '&:last-child': {
-          pb: 3, // Override Material-UI's default padding-bottom for last child
-        },
+          pb: 3,
+        }
       }}>
-        <Box>{title}</Box>
+        <Box>
+          <Typography variant="h4" gutterBottom>{title}</Typography>
+          <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+            Weather Conditions Over Time in {location}
+          </Typography>
+        </Box>
         <Box sx={{ flexGrow: 1 }}>{graph}</Box>
         <Box>{score}</Box>
         {conditions && <Box>{conditions}</Box>}
