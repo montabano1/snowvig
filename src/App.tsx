@@ -1,8 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline, Box, useMediaQuery } from '@mui/material';
 import { WeatherPanel } from './components/WeatherPanel';
-import { DaySelector } from './components/DaySelector';
 import { EventControls } from './components/EventControls';
 import { getWeatherForecast } from './services/weatherService';
 import { calculateEventScore } from './services/eventScoreService';
@@ -19,120 +18,125 @@ function App() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
   const [location, setLocation] = useState<Location>(defaultLocation);
   const [weatherData, setWeatherData] = useState<{ [key: string]: WeatherData[] }>({});
+  const [eventScores, setEventScores] = useState<{ [key: string]: EventScore }>({});
   const [selectedCurrentDate, setSelectedCurrentDate] = useState<Date>(new Date());
   const [selectedNextDate, setSelectedNextDate] = useState<Date>(nextFriday(new Date()));
   const [isLoadingCurrentWeek, setIsLoadingCurrentWeek] = useState(false);
   const [isLoadingNextWeek, setIsLoadingNextWeek] = useState(false);
 
-  const theme = createTheme({
-    palette: {
-      mode: prefersDarkMode ? 'dark' : 'light',
-    },
-  });
+  const [theme, setTheme] = useState(() => 
+    createTheme({
+      palette: {
+        mode: prefersDarkMode ? 'dark' : 'light',
+      },
+    })
+  );
 
-  const fetchData = useCallback(async () => {
+  // Update theme when dark mode preference changes
+  useEffect(() => {
+    setTheme(createTheme({
+      palette: {
+        mode: prefersDarkMode ? 'dark' : 'light',
+      },
+    }));
+  }, [prefersDarkMode]);
+
+  // Generate dates for the available forecast period (typically 14 days)
+  const availableDates = useMemo(() => {
+    const dates: Date[] = [];
+    const today = new Date();
+    // Most weather APIs provide up to 14 days of forecast
+    for (let i = 0; i < 14; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      dates.push(date);
+    }
+    return dates;
+  }, []);
+
+  // Function to fetch data for a specific date range
+  const fetchDateRangeData = useCallback(async (startDate: Date, endDate: Date) => {
     if (!location?.lat || !location?.lng) return;
 
-    setIsLoadingCurrentWeek(true);
-    setIsLoadingNextWeek(true);
-
     try {
-      const today = new Date();
-      const startDate = format(today, 'yyyy-MM-dd');
-      
-      // Find next Friday
-      let nextFridayDate = nextFriday(today);
-      if (isFriday(today)) {
-        nextFridayDate = nextFriday(addDays(today, 1)); // Get the following Friday
-      }
-      
-      // Add 2 days to get to Sunday after next Friday
-      const endDate = format(addDays(nextFridayDate, 2), 'yyyy-MM-dd');
+      const startDateStr = format(startDate, 'yyyy-MM-dd');
+      const endDateStr = format(endDate, 'yyyy-MM-dd');
 
-      console.log('Date range:', {
-        startDate,
-        nextFridayDate: format(nextFridayDate, 'yyyy-MM-dd'),
-        endDate
-      });
+      console.log('Fetching additional weather data from', startDateStr, 'to', endDateStr);
+      const data = await getWeatherForecast(location, startDateStr, endDateStr);
 
-      // Fetch weather data for the entire range
-      const data = await getWeatherForecast(location, startDate, endDate);
-      
       if (!Array.isArray(data)) {
         throw new Error('Invalid data format received');
       }
 
-      // Organize data by date
-      const organizedData: { [key: string]: WeatherData[] } = {};
+      // Organize new data
+      const newData: { [key: string]: WeatherData[] } = {};
       data.forEach(item => {
         if (item?.time) {
           const [date] = item.time.split('T');
           if (date) {
-            if (!organizedData[date]) {
-              organizedData[date] = [];
+            if (!newData[date]) {
+              newData[date] = [];
             }
-            organizedData[date].push(item);
+            newData[date].push(item);
           }
         }
       });
 
-      console.log('Organized Data:', organizedData);
-      setWeatherData(organizedData);
+      // Merge with existing data
+      setWeatherData(prev => ({...prev, ...newData}));
+
+      // Calculate and merge new scores
+      const newScores: { [key: string]: EventScore } = {};
+      Object.keys(newData).forEach(date => {
+        newScores[date] = calculateEventScore(newData[date]);
+      });
+      setEventScores(prev => ({...prev, ...newScores}));
     } catch (error) {
-      console.error('Error fetching weather data:', error);
-      setWeatherData({});
-    } finally {
-      setTimeout(() => {
+      console.error('Error fetching additional weather data:', error);
+    }
+  }, [location]);
+
+  // Handle date selection and fetch data if needed
+  const handleDateSelect = useCallback(async (date: Date, setDate: (date: Date) => void) => {
+    setDate(date);
+    
+    const dateStr = format(date, 'yyyy-MM-dd');
+    if (!weatherData[dateStr]) {
+      // If we don't have data for this date, fetch a week of data around it
+      const startDate = new Date(date);
+      startDate.setDate(date.getDate() - 3);
+      const endDate = new Date(date);
+      endDate.setDate(date.getDate() + 3);
+      await fetchDateRangeData(startDate, endDate);
+    }
+  }, [weatherData, fetchDateRangeData]);
+
+  // Initial data fetch
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      setIsLoadingCurrentWeek(true);
+      setIsLoadingNextWeek(true);
+
+      try {
+        const today = new Date();
+        const endDate = new Date(today);
+        endDate.setDate(today.getDate() + 13); // Fetch all 14 days at once
+
+        await fetchDateRangeData(today, endDate);
+      } finally {
         setIsLoadingCurrentWeek(false);
         setIsLoadingNextWeek(false);
-      }, 1000);
-    }
-  }, [location?.lat, location?.lng]);
+      }
+    };
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  // Calculate date ranges
-  const today = new Date();
-  const nextFridayDate = nextFriday(today);
-  const endDate = addDays(nextFridayDate, 2);
-
-  // If today is Friday, get the next Friday for the second panel
-  const secondPanelFriday = isFriday(today) ? nextFriday(addDays(today, 1)) : nextFridayDate;
-
-  const currentWeekDates = eachDayOfInterval({
-    start: today,
-    end: isFriday(today) ? addDays(today, 2) : nextFridayDate,
-  });
-
-  const nextWeekDates = eachDayOfInterval({
-    start: secondPanelFriday,
-    end: addDays(secondPanelFriday, 2),
-  });
+    fetchInitialData();
+  }, [fetchDateRangeData]);
 
   const getScoreForDate = (date: Date): EventScore | null => {
     const dateStr = format(date, 'yyyy-MM-dd');
-    const dayData = weatherData[dateStr];
-    if (dayData && dayData.length > 0) {
-      return calculateEventScore(dayData);
-    }
-    return null;
+    return eventScores[dateStr] || null;
   };
-
-  // Get weather data for a specific date
-  const getWeatherForDate = (date: Date): WeatherData[] => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    return weatherData[dateStr] || [];
-  };
-
-  // Get current panel data
-  const currentPanelData = getWeatherForDate(selectedCurrentDate);
-  const currentPanelScore = getScoreForDate(selectedCurrentDate);
-
-  // Get next panel data
-  const nextPanelData = getWeatherForDate(selectedNextDate);
-  const nextPanelScore = getScoreForDate(selectedNextDate);
 
   return (
     <ThemeProvider theme={theme}>
@@ -159,35 +163,33 @@ function App() {
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
               gap: 3,
+              '& > *': {
+                width: '100%',
+                minWidth: 0,
+              }
             }}
           >
             <Box>
-              <DaySelector
-                dates={currentWeekDates}
-                selectedDate={selectedCurrentDate}
-                onSelectDate={setSelectedCurrentDate}
-              />
               <WeatherPanel
                 date={selectedCurrentDate}
+                dates={availableDates}
+                onDateSelect={(date) => handleDateSelect(date, setSelectedCurrentDate)}
                 isCurrent={true}
                 isLoading={isLoadingCurrentWeek}
-                weatherData={currentPanelData}
-                score={currentPanelScore}
+                weatherData={weatherData[format(selectedCurrentDate, 'yyyy-MM-dd')] || []}
+                score={getScoreForDate(selectedCurrentDate)}
                 location={location.name}
               />
             </Box>
             <Box>
-              <DaySelector
-                dates={nextWeekDates}
-                selectedDate={selectedNextDate}
-                onSelectDate={setSelectedNextDate}
-              />
               <WeatherPanel
                 date={selectedNextDate}
+                dates={availableDates}
+                onDateSelect={(date) => handleDateSelect(date, setSelectedNextDate)}
                 isCurrent={false}
                 isLoading={isLoadingNextWeek}
-                weatherData={nextPanelData}
-                score={nextPanelScore}
+                weatherData={weatherData[format(selectedNextDate, 'yyyy-MM-dd')] || []}
+                score={getScoreForDate(selectedNextDate)}
                 location={location.name}
               />
             </Box>

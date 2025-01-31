@@ -8,6 +8,7 @@ interface WeatherCardLayoutProps {
   score: React.ReactNode;
   conditions?: React.ReactNode;
   recommendations?: React.ReactNode;
+  dateSelector?: React.ReactNode;
 }
 
 const ContentSection = styled(Box)(({ theme }) => ({
@@ -29,6 +30,18 @@ const RecommendationsSection = styled(Box)(({ theme }) => ({
   marginTop: theme.spacing(2),
 }));
 
+const DateSelectorContainer = styled(Box)(({ theme }) => ({
+  marginBottom: theme.spacing(3),
+  padding: theme.spacing(2),
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: theme.shape.borderRadius,
+  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+  border: `1px solid ${theme.palette.divider}`,
+  display: 'flex',
+  justifyContent: 'center',
+  width: '100%'
+}));
+
 export const WeatherCardLayout: React.FC<WeatherCardLayoutProps> = ({
   title,
   location,
@@ -36,6 +49,7 @@ export const WeatherCardLayout: React.FC<WeatherCardLayoutProps> = ({
   score,
   conditions,
   recommendations,
+  dateSelector,
 }) => {
   return (
     <Card sx={{ 
@@ -54,6 +68,11 @@ export const WeatherCardLayout: React.FC<WeatherCardLayoutProps> = ({
           pb: 3,
         }
       }}>
+        {dateSelector && (
+          <DateSelectorContainer>
+            {dateSelector}
+          </DateSelectorContainer>
+        )}
         <Box>
           <Typography variant="h4" gutterBottom>{title}</Typography>
           <Typography variant="subtitle1" color="text.secondary" gutterBottom>
