@@ -148,6 +148,7 @@ export const EventControls: React.FC<EventControlsProps> = ({
         />
       </FormControl>
 
+      {/* Day picker removed
       <FormControl>
         <InputLabel>Day of Week</InputLabel>
         <Select
@@ -164,6 +165,7 @@ export const EventControls: React.FC<EventControlsProps> = ({
           <MenuItem value="Sunday">Sunday</MenuItem>
         </Select>
       </FormControl>
+      */}
     </Box>
   );
 };

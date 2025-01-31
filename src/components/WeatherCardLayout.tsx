@@ -60,14 +60,16 @@ export const WeatherCardLayout: React.FC<WeatherCardLayoutProps> = ({
             Weather Conditions Over Time in {location}
           </Typography>
         </Box>
-        <Box sx={{ flexGrow: 1 }}>{graph}</Box>
-        <Box>{score}</Box>
-        {conditions && <Box>{conditions}</Box>}
-        {recommendations && (
-          <RecommendationsSection>
-            {recommendations}
-          </RecommendationsSection>
-        )}
+        <GraphContainer>{graph}</GraphContainer>
+        <Box sx={{ flex: '0 0 auto' }}>{score}</Box>
+        <Box sx={{ flex: 1 }}>
+          {conditions}
+          {recommendations && (
+            <RecommendationsSection>
+              {recommendations}
+            </RecommendationsSection>
+          )}
+        </Box>
       </CardContent>
     </Card>
   );

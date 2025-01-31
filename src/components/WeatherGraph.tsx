@@ -59,8 +59,8 @@ export const WeatherGraph: React.FC<WeatherGraphProps> = ({ weatherData, timeLab
         type: 'linear',
         display: true,
         position: 'left',
-        min: Math.min(...weatherData.map(d => d.temperature)) - 5,
-        max: Math.max(...weatherData.map(d => d.temperature)) + 5,
+        min: 0,
+        max: 100,
         title: {
           display: true,
           text: 'Temperature (°F)'
@@ -68,31 +68,17 @@ export const WeatherGraph: React.FC<WeatherGraphProps> = ({ weatherData, timeLab
       },
       y1: {
         type: 'linear',
-        display: true,
+        display: false,
         position: 'right',
         min: 0,
         max: 100,
-        grid: {
-          drawOnChartArea: false,
-        },
-        title: {
-          display: true,
-          text: 'Precipitation Probability (%)'
-        }
       },
       y2: {
         type: 'linear',
-        display: true,
+        display: false,
         position: 'right',
         min: 0,
         max: Math.max(...weatherData.map(d => d.windSpeed)) + 2,
-        grid: {
-          drawOnChartArea: false,
-        },
-        title: {
-          display: true,
-          text: 'Wind Speed (mph)'
-        }
       },
     },
   };

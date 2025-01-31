@@ -8,8 +8,30 @@ import {
 } from '@mui/icons-material';
 import React from 'react';
 
-export const calculateEventScore = (weather: WeatherData): EventScore => {
-  console.log('Calculating event score for weather:', weather);
+const calculateDayStats = (weatherData: WeatherData[]) => {
+  const dayHours = weatherData.filter(data => {
+    const hour = parseInt(data.time.split('T')[1].split(':')[0]);
+    return hour >= 6 && hour <= 20; // Only consider 6 AM to 8 PM
+  });
+
+  if (dayHours.length === 0) return null;
+
+  return {
+    avgTemp: dayHours.reduce((sum, data) => sum + data.temperature, 0) / dayHours.length,
+    maxTemp: Math.max(...dayHours.map(data => data.temperature)),
+    minTemp: Math.min(...dayHours.map(data => data.temperature)),
+    maxPrecipProb: Math.max(...dayHours.map(data => data.precipitationProbability)),
+    avgWindSpeed: dayHours.reduce((sum, data) => sum + data.windSpeed, 0) / dayHours.length,
+    maxWindSpeed: Math.max(...dayHours.map(data => data.windSpeed)),
+    maxUV: Math.max(...dayHours.map(data => data.uvIndex)),
+  };
+};
+
+export const calculateEventScore = (weatherData: WeatherData[]): EventScore => {
+  const stats = calculateDayStats(weatherData);
+  if (!stats) return { score: 0, conditions: ['No daytime data available'], recommendations: [] };
+
+  console.log('Calculating event score for day stats:', stats);
 
   // Initialize score at 100 and deduct based on conditions
   let score = 100;
@@ -17,7 +39,7 @@ export const calculateEventScore = (weather: WeatherData): EventScore => {
   const recommendations: Array<{ icon: JSX.Element; title: string; description: string }> = [];
 
   // Temperature checks
-  if (weather.temperature < 32) {
+  if (stats.minTemp < 32) {
     score -= 30;
     conditions.push('Very cold temperatures');
     recommendations.push({
@@ -25,7 +47,7 @@ export const calculateEventScore = (weather: WeatherData): EventScore => {
       title: 'Bundle Up',
       description: 'Wear warm, layered clothing and bring hand warmers.',
     });
-  } else if (weather.temperature < 50) {
+  } else if (stats.avgTemp < 50) {
     score -= 15;
     conditions.push('Cool temperatures');
     recommendations.push({
@@ -33,7 +55,7 @@ export const calculateEventScore = (weather: WeatherData): EventScore => {
       title: 'Dress Warmly',
       description: 'Bring a jacket and consider layering.',
     });
-  } else if (weather.temperature > 85) {
+  } else if (stats.maxTemp > 85) {
     score -= 20;
     conditions.push('Hot temperatures');
     recommendations.push({
@@ -44,7 +66,7 @@ export const calculateEventScore = (weather: WeatherData): EventScore => {
   }
 
   // Precipitation checks
-  if (weather.precipitationProbability > 70) {
+  if (stats.maxPrecipProb > 70) {
     score -= 40;
     conditions.push('High chance of precipitation');
     recommendations.push({
@@ -52,7 +74,7 @@ export const calculateEventScore = (weather: WeatherData): EventScore => {
       title: 'Rain Protection',
       description: 'Bring umbrellas and waterproof gear.',
     });
-  } else if (weather.precipitationProbability > 30) {
+  } else if (stats.maxPrecipProb > 30) {
     score -= 20;
     conditions.push('Moderate chance of precipitation');
     recommendations.push({
@@ -63,7 +85,7 @@ export const calculateEventScore = (weather: WeatherData): EventScore => {
   }
 
   // Wind checks
-  if (weather.windSpeed > 20) {
+  if (stats.maxWindSpeed > 20) {
     score -= 25;
     conditions.push('High winds');
     recommendations.push({
@@ -71,7 +93,7 @@ export const calculateEventScore = (weather: WeatherData): EventScore => {
       title: 'Wind Protection',
       description: 'Secure loose items and consider wind protection.',
     });
-  } else if (weather.windSpeed > 10) {
+  } else if (stats.avgWindSpeed > 10) {
     score -= 10;
     conditions.push('Moderate winds');
     recommendations.push({
@@ -82,7 +104,7 @@ export const calculateEventScore = (weather: WeatherData): EventScore => {
   }
 
   // UV Index checks
-  if (weather.uvIndex > 7) {
+  if (stats.maxUV > 7) {
     score -= 15;
     conditions.push('High UV index');
     recommendations.push({
@@ -95,15 +117,9 @@ export const calculateEventScore = (weather: WeatherData): EventScore => {
   // Ensure score doesn't go below 0
   score = Math.max(0, score);
 
-  console.log('Calculated score:', {
-    score,
-    conditions,
-    recommendations
-  });
-
   return {
     score,
     conditions,
-    recommendations
+    recommendations,
   };
 };

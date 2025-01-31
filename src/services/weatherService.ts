@@ -22,23 +22,28 @@ export const getWeatherForecast = async (
       },
     });
 
-    if (!response.data?.days?.[0]?.hours) {
+    if (!response.data?.days) {
       console.warn('Unexpected API response format:', response.data);
       return [];
     }
 
-    const hourlyData = response.data.days[0].hours;
-    console.log('Received hourly data:', hourlyData);
+    // Flatten all days' hourly data into a single array
+    const allHourlyData = response.data.days.flatMap((day: any) => {
+      const date = day.datetime;
+      return (day.hours || []).map((hour: any) => ({
+        time: `${date}T${hour.datetime}`,
+        temperature: hour.temp,
+        feelsLike: hour.feelslike,
+        humidity: hour.humidity,
+        windSpeed: hour.windspeed,
+        conditions: hour.conditions,
+        precipitationProbability: hour.precipprob,
+        uvIndex: hour.uvindex,
+      }));
+    });
 
-    return hourlyData.map((hour: any) => ({
-      temperature: hour.temp,
-      feelsLike: hour.feelslike,
-      humidity: hour.humidity,
-      windSpeed: hour.windspeed,
-      conditions: hour.conditions,
-      precipitationProbability: hour.precipprob,
-      uvIndex: hour.uvindex,
-    }));
+    console.log('Processed weather data:', allHourlyData);
+    return allHourlyData;
   } catch (error) {
     console.error('Error fetching weather data:', error);
     throw error;
