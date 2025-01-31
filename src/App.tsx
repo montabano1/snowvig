@@ -175,11 +175,11 @@ function App() {
                 date={selectedCurrentDate}
                 dates={availableDates}
                 onDateSelect={(date) => handleDateSelect(date, setSelectedCurrentDate)}
-                isCurrent={true}
                 isLoading={isLoadingCurrentWeek}
-                weatherData={weatherData[format(selectedCurrentDate, 'yyyy-MM-dd')] || []}
+                weatherData={weatherData}
                 score={getScoreForDate(selectedCurrentDate)}
                 location={location.name}
+                eventScores={eventScores}
               />
             </Box>
             <Box>
@@ -187,11 +187,11 @@ function App() {
                 date={selectedNextDate}
                 dates={availableDates}
                 onDateSelect={(date) => handleDateSelect(date, setSelectedNextDate)}
-                isCurrent={false}
                 isLoading={isLoadingNextWeek}
-                weatherData={weatherData[format(selectedNextDate, 'yyyy-MM-dd')] || []}
+                weatherData={weatherData}
                 score={getScoreForDate(selectedNextDate)}
                 location={location.name}
+                eventScores={eventScores}
               />
             </Box>
           </Box>

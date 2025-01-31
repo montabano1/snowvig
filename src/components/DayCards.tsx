@@ -1,147 +1,131 @@
-import React, { useEffect, useRef, useMemo } from 'react';
-import { Box, Typography } from '@mui/material';
-import { format, addDays, isFriday, nextFriday, differenceInDays, isSameDay } from 'date-fns';
+import React from 'react';
+import { Box, Paper, Typography, styled } from '@mui/material';
+import { format } from 'date-fns';
+import { EventScore, WeatherData } from '../types';
 
-interface DayCardsProps {
-  selectedDate: Date;
-  onDateSelect: (date: Date) => void;
-  panelType: 'current' | 'next';
+const getScoreColor = (score: number): string => {
+  if (score >= 80) return '#4CAF50'; // Green
+  if (score >= 60) return '#FFC107'; // Yellow
+  return '#F44336'; // Red
+};
+
+interface DayCardProps {
+  date: Date;
+  score: EventScore | null;
+  selected: boolean;
+  onClick: () => void;
+  weatherData: WeatherData[];
 }
 
-export const DayCards: React.FC<DayCardsProps> = ({ selectedDate, onDateSelect, panelType }) => {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const today = new Date();
+const StyledCard = styled(Paper, {
+  shouldForwardProp: (prop) => prop !== 'borderColor' && prop !== 'isSelected'
+})<{ borderColor: string; isSelected: boolean }>(({ theme, borderColor, isSelected }) => ({
+  padding: theme.spacing(1.5),
+  cursor: 'pointer',
+  transition: 'all 0.2s ease-in-out',
+  border: `2px solid ${borderColor}`,
+  backgroundColor: isSelected ? `${borderColor}15` : 'transparent',
+  minWidth: '80px',
+  '&:hover': {
+    transform: 'translateY(-2px)',
+    boxShadow: `0 4px 8px ${borderColor}40`,
+  },
+}));
 
-  // Memoize dates array to prevent recalculation
-  const dates = useMemo(() => {
-    const nextFridayDate = nextFriday(addDays(today, 7));
-    const endDate = addDays(nextFridayDate, 9);
-    const datesArray: Date[] = [];
-    let currentDate = today;
-    while (currentDate <= endDate) {
-      datesArray.push(new Date(currentDate));
-      currentDate = addDays(currentDate, 1);
-    }
-    return datesArray;
-  }, [today]);
+const DayCard: React.FC<DayCardProps> = ({ date, score, selected, onClick, weatherData }) => {
+  // Calculate average temperature
+  const avgTemp = weatherData && weatherData.length > 0
+    ? Math.round(weatherData.reduce((sum, data) => sum + (data.temperature || 0), 0) / weatherData.length)
+    : null;
 
-  // Set initial date selection
-  useEffect(() => {
-    const isInitialDate = selectedDate.toDateString() === today.toDateString();
-    console.log('Initial date check', {
-      panelType,
-      isInitialDate,
-      selectedDate: selectedDate.toDateString(),
-      today: today.toDateString()
-    });
-    
-    if (!isInitialDate) return;
+  const borderColor = score ? getScoreColor(score.score) : '#e0e0e0';
+  
+  const dayOfWeek = format(date, 'EEE');
+  const dayAndMonth = format(date, 'MMM d');
 
-    if (panelType === 'next') {
-      // Get this Friday first
-      const thisFriday = nextFriday(today);
-      // Then add 7 days to get next Friday
-      const nextFridayDate = addDays(thisFriday, 7);
-      
-      console.log('Next panel date calculation', {
-        panelType,
-        today: today.toDateString(),
-        thisFriday: thisFriday.toDateString(),
-        nextFridayDate: nextFridayDate.toDateString(),
-        isTodayFriday: isFriday(today)
-      });
-      
-      onDateSelect(nextFridayDate);
-    } else {
-      const upcomingFriday = nextFriday(today);
-      console.log('Current panel date calculation', {
-        panelType,
-        today: today.toDateString(),
-        upcomingFriday: upcomingFriday.toDateString(),
-        isTodayFriday: isFriday(today)
-      });
-      onDateSelect(upcomingFriday);
-    }
-  }, [onDateSelect, panelType, selectedDate, today]);
+  return (
+    <StyledCard
+      borderColor={borderColor}
+      isSelected={selected}
+      onClick={onClick}
+      elevation={selected ? 4 : 1}
+    >
+      <Box sx={{ textAlign: 'center' }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+          {dayOfWeek}
+        </Typography>
+        <Typography variant="body2">
+          {dayAndMonth}
+        </Typography>
+        {avgTemp !== null && (
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              fontWeight: 'bold',
+              mt: 0.5,
+              color: '#2196F3' // Light blue for temperature
+            }}
+          >
+            {avgTemp}°F
+          </Typography>
+        )}
+      </Box>
+    </StyledCard>
+  );
+};
 
-  // Log renders
-  console.log('DayCards render', {
-    panelType,
-    selectedDate: selectedDate.toDateString(),
-    renderCount: Math.random() // To track unique renders
-  });
+interface DayCardsProps {
+  dates: Date[];
+  selectedDate: Date;
+  scores: { [key: string]: EventScore };
+  weatherData: { [key: string]: WeatherData[] };
+  onDateSelect: (date: Date) => void;
+}
 
-  // Update scroll position when selected date changes
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const CARD_WIDTH = 80;
-      const GAP = 8;
-      
-      const daysFromToday = differenceInDays(selectedDate, today);
-      const scrollPosition = Math.max(0, (daysFromToday) * (CARD_WIDTH + GAP));
-
-      // Use smooth scrolling only for user interactions
-      container.scrollTo({
-        left: scrollPosition,
-        behavior: 'smooth'
-      });
-    }
-  }, [selectedDate, today]);
-
+const DayCards: React.FC<DayCardsProps> = ({
+  dates,
+  selectedDate,
+  scores,
+  weatherData,
+  onDateSelect,
+}) => {
   return (
     <Box
       sx={{
-        border: 1,
-        borderColor: 'divider',
-        borderRadius: 1,
-        overflow: 'auto',
-        width: '100%'
+        width: '100%',
+        overflowX: 'auto',
+        '&::-webkit-scrollbar': {
+          display: 'none'
+        },
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
       }}
     >
       <Box
-        ref={scrollContainerRef}
         sx={{
           display: 'flex',
           gap: 1,
-          overflowX: 'auto',
-          pb: 2,
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-          '&::-webkit-scrollbar': {
-            display: 'none'
-          }
+          p: 2,
+          width: 'fit-content',
         }}
       >
-        {dates.map((day) => {
-          const isSelected = isSameDay(day, selectedDate);
+        {dates.map((date) => {
+          const dateStr = format(date, 'yyyy-MM-dd');
+          const dayWeatherData = weatherData[dateStr] || [];
           return (
-            <Box
-              key={day.toISOString()}
-              onClick={() => onDateSelect(day)}
-              sx={{
-                minWidth: 80,
-                p: 1,
-                borderRadius: 1,
-                cursor: 'pointer',
-                bgcolor: isSelected ? 'primary.main' : 'background.paper',
-                color: isSelected ? 'primary.contrastText' : 'text.primary',
-                transition: 'all 0.2s ease-in-out',
-                '&:hover': {
-                  bgcolor: isSelected ? 'primary.dark' : 'action.hover'
-                }
-              }}
-            >
-              <Typography variant="subtitle2" align="center">
-                {format(day, 'EEE')}
-              </Typography>
-              <Typography variant="h6" align="center">
-                {format(day, 'd')}
-              </Typography>
-            </Box>
+            <DayCard
+              key={dateStr}
+              date={date}
+              score={scores[dateStr] || null}
+              weatherData={dayWeatherData}
+              selected={date.toDateString() === selectedDate.toDateString()}
+              onClick={() => onDateSelect(date)}
+            />
           );
         })}
       </Box>
     </Box>
   );
 };
+
+export default DayCards;

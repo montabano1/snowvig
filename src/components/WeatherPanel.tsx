@@ -1,22 +1,22 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
-import { WeatherCardLayout } from './WeatherCardLayout';
 import { WeatherGraph } from './WeatherGraph';
+import { WeatherCardLayout } from './WeatherCardLayout';
 import { EventScoreCard } from './EventScoreCard';
 import { WeatherSkeleton } from './WeatherSkeleton';
 import { WeatherData, EventScore } from '../types';
 import { format } from 'date-fns';
-import WeatherDateSelector from './WeatherDateSelector';
+import DayCards from './DayCards';
 
 interface WeatherPanelProps {
   date: Date;
   dates: Date[];
   onDateSelect: (date: Date) => void;
-  isCurrent: boolean;
   isLoading: boolean;
-  weatherData: WeatherData[];
+  weatherData: { [key: string]: WeatherData[] };
   score: EventScore | null;
   location: string;
+  eventScores: { [key: string]: EventScore };
 }
 
 export const WeatherPanel: React.FC<WeatherPanelProps> = ({
@@ -27,6 +27,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
   weatherData,
   score,
   location,
+  eventScores,
 }) => {
   const dayOfWeek = format(date, 'EEEE');
   const monthAndDay = format(date, 'MMMM d');
@@ -40,7 +41,10 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
     return <WeatherSkeleton day={title} />;
   }
 
-  if (!weatherData || weatherData.length === 0) {
+  const dateStr = format(date, 'yyyy-MM-dd');
+  const currentDayWeather = weatherData[dateStr] || [];
+
+  if (!weatherData || Object.keys(weatherData).length === 0) {
     return (
       <Box sx={{ 
         p: 3, 
@@ -82,15 +86,17 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
     <WeatherCardLayout
       title={title}
       location={location}
-      graph={<WeatherGraph weatherData={weatherData} timeLabels={timeLabels} />}
-      score={<EventScoreCard score={score} />}
       dateSelector={
-        <WeatherDateSelector
-          selectedDate={date}
+        <DayCards
           dates={dates}
+          selectedDate={date}
+          scores={eventScores}
+          weatherData={weatherData}
           onDateSelect={onDateSelect}
         />
       }
+      graph={<WeatherGraph weatherData={currentDayWeather} timeLabels={timeLabels} />}
+      score={<EventScoreCard score={score} />}
     />
   );
 };

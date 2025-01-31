@@ -1,50 +1,79 @@
-# React + TypeScript + Vite
+# Weather Meetup Planner
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A smart weather application designed to help meetup organizers plan outdoor events. The app provides detailed weather forecasts, activity recommendations, and event scores to make informed decisions about outdoor gatherings.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 🌡️ Weather Information
+- Detailed temperature, precipitation, and wind speed graphs
+- Weekly forecast view for comparing current and next week
+- Color-coded event scores (0-100) indicating overall conditions
 
-## Expanding the ESLint configuration
+### 🎯 Smart Recommendations
+- **Activities**: Suggestions for outdoor/indoor activities based on weather
+  - Warm weather: Cycling, hiking, beach activities, park sports
+  - Cold weather: Winter sports, ice skating, snow activities
+  - Indoor alternatives during bad weather
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- **Games**:
+  - Flying disc games when wind conditions are favorable
+  - Ball sports in good weather
+  - Indoor game suggestions during inclement weather
 
-- Configure the top-level `parserOptions` property like this:
+- **Food & Drinks**:
+  - Temperature-appropriate refreshment suggestions
+  - Picnic recommendations
+  - Food safety alerts in extreme conditions
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+### 🎨 User Interface
+- Clean, modern Material-UI design
+- Intuitive date selection
+- Location search functionality
+- Visual weather indicators and icons
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Technical Details
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+### Built With
+- React + TypeScript
+- Material-UI for components
+- Chart.js for weather visualization
+- Visual Crossing Weather API
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+### Key Components
+- `WeatherPanel`: Main weather display
+- `DayCards`: Weekly forecast view
+- `WeatherGraph`: Interactive weather visualization
+- `EventScoreCard`: Conditions and recommendations
+
+## Getting Started
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Create a `.env` file with your Visual Crossing API key:
+   ```
+   VITE_VISUAL_CROSSING_API_KEY=your_api_key_here
+   ```
+4. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## Usage
+
+1. **Set Location**: Enter your meetup location
+2. **View Forecast**: See weather conditions for current and next week
+3. **Check Recommendations**: Review suggested activities, games, and food options
+4. **Monitor Score**: Use the event score to make informed decisions about your meetup
+
+## Weather Score System
+
+- **80-100**: Great conditions - Perfect for outdoor activities
+- **60-79**: Fair conditions - Outdoor activities possible with preparation
+- **0-59**: Poor conditions - Consider indoor alternatives
+
+## Contributing
+
+Feel free to submit issues and enhancement requests!
